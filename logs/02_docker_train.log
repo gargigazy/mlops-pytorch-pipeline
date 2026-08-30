@@ -1,0 +1,29 @@
+$ docker run --rm -v $(pwd)/data:/app/data -v $(pwd)/checkpoints:/app/checkpoints mlops-train:v1
+{"event": "config_loaded", "path": "/app/configs/training_config.yaml"}
+{"event": "device", "device": "cpu"}
+Downloading https://cave.cs.toronto.edu/kriz/cifar-10-python.tar.gz to /app/data/cifar-10-python.tar.gz
+(download progress trimmed)
+Extracting /app/data/cifar-10-python.tar.gz to /app/data
+Files already downloaded and verified
+{"epoch": 1, "train_loss": 1.3551, "train_accuracy": 0.5061, "val_loss": 0.9853, "val_accuracy": 0.6539}
+{"event": "checkpoint_saved", "path": "/app/checkpoints/classifier_v1.pt"}
+{"epoch": 2, "train_loss": 0.8767, "train_accuracy": 0.6903, "val_loss": 0.8767, "val_accuracy": 0.7051}
+{"event": "checkpoint_saved", "path": "/app/checkpoints/classifier_v1.pt"}
+{"epoch": 3, "train_loss": 0.6808, "train_accuracy": 0.7623, "val_loss": 0.626, "val_accuracy": 0.7849}
+{"event": "checkpoint_saved", "path": "/app/checkpoints/classifier_v1.pt"}
+{"epoch": 4, "train_loss": 0.58, "train_accuracy": 0.7997, "val_loss": 0.6167, "val_accuracy": 0.7975}
+{"event": "checkpoint_saved", "path": "/app/checkpoints/classifier_v1.pt"}
+{"epoch": 5, "train_loss": 0.5083, "train_accuracy": 0.8238, "val_loss": 0.5819, "val_accuracy": 0.8073}
+{"event": "checkpoint_saved", "path": "/app/checkpoints/classifier_v1.pt"}
+{"epoch": 6, "train_loss": 0.4509, "train_accuracy": 0.844, "val_loss": 0.4858, "val_accuracy": 0.8371}
+{"event": "checkpoint_saved", "path": "/app/checkpoints/classifier_v1.pt"}
+{"epoch": 7, "train_loss": 0.3977, "train_accuracy": 0.8624, "val_loss": 0.4789, "val_accuracy": 0.8435}
+{"event": "checkpoint_saved", "path": "/app/checkpoints/classifier_v1.pt"}
+{"epoch": 8, "train_loss": 0.3657, "train_accuracy": 0.8745, "val_loss": 0.4492, "val_accuracy": 0.8483}
+{"event": "checkpoint_saved", "path": "/app/checkpoints/classifier_v1.pt"}
+{"epoch": 9, "train_loss": 0.3335, "train_accuracy": 0.8848, "val_loss": 0.4402, "val_accuracy": 0.8585}
+{"event": "checkpoint_saved", "path": "/app/checkpoints/classifier_v1.pt"}
+{"epoch": 10, "train_loss": 0.3017, "train_accuracy": 0.8959, "val_loss": 0.387, "val_accuracy": 0.8733}
+{"event": "checkpoint_saved", "path": "/app/checkpoints/classifier_v1.pt"}
+{"event": "training_complete", "best_val_loss": 0.387}
+training exit code: 0
