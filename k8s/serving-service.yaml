@@ -1,0 +1,15 @@
+# service to expose the serving pods inside the cluster
+# using ClusterIP since im testing on minikube (would use LoadBalancer on cloud)
+apiVersion: v1
+kind: Service
+metadata:
+  name: model-serving
+  namespace: ml-training
+spec:
+  type: ClusterIP
+  selector:
+    app: model-serving
+  ports:
+    - port: 80
+      targetPort: 8080
+      protocol: TCP

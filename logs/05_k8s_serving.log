@@ -1,0 +1,86 @@
+$ kubectl apply -f k8s/serving-deployment.yaml
+deployment.apps/model-serving created
+
+$ kubectl apply -f k8s/serving-service.yaml
+service/model-serving created
+
+$ kubectl apply -f k8s/hpa.yaml
+horizontalpodautoscaler.autoscaling/model-serving-hpa created
+
+$ kubectl rollout status deployment/model-serving -n ml-training
+Waiting for deployment "model-serving" rollout to finish: 0 of 2 updated replicas are available...
+Waiting for deployment "model-serving" rollout to finish: 1 of 2 updated replicas are available...
+deployment "model-serving" successfully rolled out
+
+$ kubectl get pods -n ml-training
+NAME                           READY   STATUS      RESTARTS   AGE
+model-serving-f54d6966-pxknw   1/1     Running     0          29s
+model-serving-f54d6966-wxbfm   1/1     Running     0          29s
+model-training-jnzkw           0/1     Completed   0          40m
+
+$ kubectl get svc,hpa -n ml-training
+NAME                    TYPE        CLUSTER-IP        EXTERNAL-IP   PORT(S)   AGE
+service/model-serving   ClusterIP   192.168.194.154   <none>        80/TCP    29s
+
+NAME                                                    REFERENCE                  TARGETS              MINPODS   MAXPODS   REPLICAS   AGE
+horizontalpodautoscaler.autoscaling/model-serving-hpa   Deployment/model-serving   cpu: <unknown>/70%   2         5         2          29s
+
+$ kubectl describe deployment model-serving -n ml-training
+Name:                   model-serving
+Namespace:              ml-training
+CreationTimestamp:      Sun, 30 Aug 2026 19:09:01 +0530
+Labels:                 app=model-serving
+Annotations:            deployment.kubernetes.io/revision: 1
+Selector:               app=model-serving
+Replicas:               2 desired | 2 updated | 2 total | 2 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  0 max unavailable, 1 max surge
+Pod Template:
+  Labels:  app=model-serving
+  Containers:
+   server:
+    Image:      mlops-serve:v1
+    Port:       8080/TCP
+    Host Port:  0/TCP
+    Limits:
+      cpu:     1
+      memory:  2Gi
+    Requests:
+      cpu:      500m
+      memory:   1Gi
+    Liveness:   http-get http://:8080/health delay=0s timeout=1s period=10s #success=1 #failure=3
+    Readiness:  http-get http://:8080/health delay=15s timeout=1s period=5s #success=1 #failure=3
+    Environment:
+      CHECKPOINT_PATH:  /app/checkpoints/classifier_v1.pt
+    Mounts:
+      /app/checkpoints from checkpoints-volume (ro)
+  Volumes:
+   checkpoints-volume:
+    Type:          PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+    ClaimName:     checkpoints-pvc
+    ReadOnly:      false
+  Node-Selectors:  <none>
+  Tolerations:     <none>
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Available      True    MinimumReplicasAvailable
+  Progressing    True    NewReplicaSetAvailable
+OldReplicaSets:  <none>
+NewReplicaSet:   model-serving-f54d6966 (2/2 replicas created)
+Events:
+  Type    Reason             Age   From                   Message
+  ----    ------             ----  ----                   -------
+  Normal  ScalingReplicaSet  29s   deployment-controller  Scaled up replica set model-serving-f54d6966 from 0 to 2
+
+$ kubectl port-forward svc/model-serving 8080:80 -n ml-training
+Forwarding from 127.0.0.1:8080 -> 8080
+
+$ curl http://localhost:8080/health
+{"status":"ok"}
+
+
+$ curl -X POST http://localhost:8080/predict -F "image=@test_image.png"
+
+{"confidence":0.3163,"predicted_class":"dog","probabilities":{"airplane":0.0007,"automobile":0.0002,"bird":0.0221,"cat":0.3043,"deer":0.1598,"dog":0.3163,"frog":0.1429,"horse":0.0532,"ship":0.0003,"truck":0.0001}}

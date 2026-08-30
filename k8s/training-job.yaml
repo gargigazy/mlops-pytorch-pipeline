@@ -1,0 +1,53 @@
+# kubernetes job that runs the training once and stops
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: model-training
+  namespace: ml-training
+  labels:
+    app: model-training
+spec:
+  backoffLimit: 2  # retry max 2 times if it fails
+  template:
+    metadata:
+      labels:
+        app: model-training
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: trainer
+          image: mlops-train:v1
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: CONFIG_PATH
+              value: /app/configs/training_config.yaml
+            # limit torch threads to match the cpu limit, otherwise it spawns
+            # threads for all 10 cores and they fight over the 2 cpu quota
+            - name: OMP_NUM_THREADS
+              value: "8"
+            - name: MKL_NUM_THREADS
+              value: "8"
+          resources:
+            requests:
+              cpu: "2"
+              memory: 4Gi
+            limits:
+              cpu: "8"   # allow bursting above the request so cpu training finishes in reasonable time
+              memory: 4Gi
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/configs
+            - name: data-volume
+              mountPath: /app/data
+            - name: checkpoints-volume
+              mountPath: /app/checkpoints
+      volumes:
+        - name: config-volume
+          configMap:
+            name: training-config
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: data-pvc
+        - name: checkpoints-volume
+          persistentVolumeClaim:
+            claimName: checkpoints-pvc

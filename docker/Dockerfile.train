@@ -1,0 +1,26 @@
+# multi stage dockerfile for training
+# stage 1 installs the dependencies, stage 2 has the actual code
+# this way the dependency layer gets cached and rebuilds are faster
+
+# Stage 1: base with dependencies
+FROM python:3.11-slim AS base
+
+WORKDIR /app
+
+COPY requirements/train.txt .
+# using cpu version of torch to keep image smaller
+RUN pip install --no-cache-dir -r train.txt --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
+
+# Stage 2: training runtime
+FROM base AS training
+
+COPY src/ ./src/
+COPY configs/ ./configs/
+
+# so print statements show up immediately in docker logs
+ENV PYTHONUNBUFFERED=1
+
+# config path can be overriden with env var for kubernetes
+ENV CONFIG_PATH=/app/configs/training_config.yaml
+
+ENTRYPOINT ["python", "src/train.py"]

@@ -1,0 +1,43 @@
+# ci pipeline - runs tests on every push and PR
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements/train.txt
+          pip install pytest
+
+      - name: run tests
+        run: pytest tests/ -v
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+
+      - name: build training image
+        run: docker build -f docker/Dockerfile.train -t mlops-train:ci .
+
+
+      - name: build serving image
+        run: docker build -f docker/Dockerfile.serve -t mlops-serve:ci .

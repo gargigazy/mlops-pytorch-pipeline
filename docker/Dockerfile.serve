@@ -1,0 +1,33 @@
+# dockerfile for the serving app
+# only inference dependencies, no training stuff like tensorboard
+
+FROM python:3.11-slim AS base
+
+WORKDIR /app
+
+# need curl for the healthcheck
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
+COPY requirements/serve.txt .
+RUN pip install --no-cache-dir -r serve.txt --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
+
+FROM base AS serving
+
+COPY src/model.py ./src/
+COPY src/serve.py ./src/
+
+ENV PYTHONUNBUFFERED=1
+ENV CHECKPOINT_PATH=/app/checkpoints/classifier_v1.pt
+
+# make a non root user for security (running as root in containers is bad practice)
+RUN useradd --create-home appuser && chown -R appuser /app
+USER appuser
+
+EXPOSE 8080
+
+# docker checks this to know if the container is healthy
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:8080/health || exit 1
+
+WORKDIR /app/src
+CMD ["python", "serve.py"]
