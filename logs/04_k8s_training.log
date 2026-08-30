@@ -1,0 +1,37 @@
+$ kubectl apply -f k8s/namespace.yaml
+namespace/ml-training created
+
+$ kubectl apply -f k8s/configmap.yaml
+configmap/training-config created
+
+$ kubectl apply -f k8s/pvc.yaml
+persistentvolumeclaim/data-pvc created
+persistentvolumeclaim/checkpoints-pvc created
+
+$ kubectl apply -f k8s/training-job.yaml
+job.batch/model-training created
+
+$ kubectl get pods -n ml-training
+NAME                   READY   STATUS    RESTARTS   AGE
+model-training-bddxh   1/1     Running   0          16s
+
+$ kubectl get pvc -n ml-training
+NAME              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+checkpoints-pvc   Bound    pvc-56aa4118-5d30-4459-b5c1-8a4a800a836d   2Gi        RWO            local-path     <unset>                 16s
+data-pvc          Bound    pvc-b0591c42-9b1d-4f04-acde-ffd2f822a0e2   5Gi        RWO            local-path     <unset>                 16s
+
+# --- after training finished ---
+$ kubectl get jobs -n ml-training
+NAME             STATUS     COMPLETIONS   DURATION   AGE
+model-training   Complete   1/1           39m        39m
+
+$ kubectl logs job/model-training -n ml-training
+{"event": "config_loaded", "path": "/app/configs/training_config.yaml"}
+{"event": "device", "device": "cpu"}
+Files already downloaded and verified
+Files already downloaded and verified
+{"epoch": 1, "train_loss": 1.3862, "train_accuracy": 0.4918, "val_loss": 1.1689, "val_accuracy": 0.5941}
+{"event": "checkpoint_saved", "path": "/app/checkpoints/classifier_v1.pt"}
+{"epoch": 2, "train_loss": 0.9083, "train_accuracy": 0.6799, "val_loss": 0.8211, "val_accuracy": 0.7175}
+{"event": "checkpoint_saved", "path": "/app/checkpoints/classifier_v1.pt"}
+{"event": "training_complete", "best_val_loss": 0.8211}
