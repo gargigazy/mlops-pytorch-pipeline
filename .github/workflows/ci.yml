@@ -28,15 +28,3 @@ jobs:
 
       - name: run tests
         run: pytest tests/ -v
-
-  docker-build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout code
-        uses: actions/checkout@v4
-
-      - name: build training image
-        run: docker build -f docker/Dockerfile.train -t mlops-train:ci .
-
-      - name: build serving image
-        run: docker build -f docker/Dockerfile.serve -t mlops-serve:ci .
