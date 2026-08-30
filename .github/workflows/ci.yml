@@ -37,3 +37,7 @@ jobs:
 
       - name: build training image
         run: docker build -f docker/Dockerfile.train -t mlops-train:ci .
+
+
+      - name: build serving image
+        run: docker build -f docker/Dockerfile.serve -t mlops-serve:ci .
