@@ -1,0 +1,28 @@
+# python stuff
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# data and model files (too big for git)
+data/
+checkpoints/
+*.pt
+*.pth
+
+# secrets - never commit these!!
+.env
+*.pem
+secrets.yaml
+
+# ide
+.vscode/
+.idea/
+.DS_Store
+
+# test stuff
+.pytest_cache/
+htmlcov/
+.coverage
