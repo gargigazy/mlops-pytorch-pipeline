@@ -1,0 +1,14 @@
+$ docker run --rm -p 8080:8080 -v $(pwd)/checkpoints:/app/checkpoints mlops-serve:v1
+loading checkpoint from /app/checkpoints/classifier_v1.pt
+model loaded ok, val_accuracy was 0.8733
+ * Serving Flask app 'serve'
+ * Debug mode: off
+ * Running on all addresses (0.0.0.0)
+
+$ curl http://localhost:8080/health
+{"status":"ok"}
+
+
+$ curl -X POST http://localhost:8080/predict -F "image=@test_image.png"   # (a dog image from the cifar10 test set)
+{"confidence":0.8497,"predicted_class":"dog","probabilities":{"airplane":0.0,"automobile":0.0,"bird":0.0002,"cat":0.0099,"deer":0.1337,"dog":0.8497,"frog":0.0003,"horse":0.0061,"ship":0.0,"truck":0.0}}
+
